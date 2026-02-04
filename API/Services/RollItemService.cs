@@ -72,4 +72,43 @@ public class RollItemService : IRollItemService
 
         return items.Select(Map);
     }
+
+    public async Task<RollItemStatsResponseDto> GetStatsAsync(RollItemStatsFilterDto filter)
+    {
+        var allItems = await _context.RollItems
+            .IgnoreQueryFilters()
+            .Where(x => x.CreatedOn >= filter.From && x.CreatedOn <= filter.To)
+            .ToListAsync();
+
+        if (!allItems.Any())
+            return new RollItemStatsResponseDto();
+
+        var activeItems = allItems.Where(x => x.DeletedOn == null).ToList();
+        var deletedItems = allItems.Where(x => x.DeletedOn != null && x.DeletedOn >= filter.From && x.DeletedOn <= filter.To).ToList();
+
+        var durations = allItems
+            .Where(x => x.DeletedOn.HasValue)
+            .Select(x => x.DeletedOn.Value - x.CreatedOn)
+            .ToList();
+
+        return new RollItemStatsResponseDto
+        {
+            AddedCount = allItems.Count,
+            DeletedCount = deletedItems.Count,
+
+            AvgLength = activeItems.Any() ? activeItems.Average(x => x.Length) : 0,
+            AvgWeight = activeItems.Any() ? activeItems.Average(x => x.Weight) : 0,
+
+            MaxLength = activeItems.Any() ? activeItems.Max(x => x.Length) : 0,
+            MinLength = activeItems.Any() ? activeItems.Min(x => x.Length) : 0,
+
+            MaxWeight = activeItems.Any() ? activeItems.Max(x => x.Weight) : 0,
+            MinWeight = activeItems.Any() ? activeItems.Min(x => x.Weight) : 0,
+
+            TotalWeight = activeItems.Any() ? activeItems.Sum(x => x.Weight) : 0,
+
+            MaxDuration = durations.Any() ? durations.Max() : null,
+            MinDuration = durations.Any() ? durations.Min() : null
+        };
+    }
 }

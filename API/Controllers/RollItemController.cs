@@ -40,4 +40,10 @@ public class RollItemController : ControllerBase
     {
         return await _service.GetAsync(filter);
     }
+
+    [HttpPost("stats")]
+    public async Task<RollItemStatsResponseDto> GetStats([FromBody] RollItemStatsFilterDto filter)
+    {
+        return await _service.GetStatsAsync(filter);
+    }
 }

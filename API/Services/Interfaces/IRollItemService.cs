@@ -7,4 +7,6 @@ public interface IRollItemService
     Task<RollItemResponseDto?> DeleteAsync(int id);
 
     Task<IEnumerable<RollItemResponseDto>> GetAsync(RollItemFilterDto filter);
+
+    Task<RollItemStatsResponseDto> GetStatsAsync(RollItemStatsFilterDto filter);
 }
